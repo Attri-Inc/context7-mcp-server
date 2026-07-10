@@ -8,7 +8,7 @@ COPY src ./src
 RUN npm install && npm run build
 
 # Stage 2: use Supergateway as the runtime base
-FROM ghcr.io/supercorp-ai/supergateway:v3.4.3 AS supergw
+FROM ghcr.io/supercorp-ai/supergateway:3.4.3 AS supergw
 
 WORKDIR /app
 
