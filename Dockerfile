@@ -1,25 +1,7 @@
-# Stage 1: build your Node app
-FROM node:lts-alpine AS builder
-WORKDIR /app
-
-COPY package.json bun.lock tsconfig.json ./
-COPY src ./src
-
-RUN npm install && npm run build
-
-# Stage 2: use Supergateway as the runtime base
-FROM ghcr.io/supercorp-ai/supergateway:3.4.3 AS supergw
-
-WORKDIR /app
-
-# Copy in your compiled dist and install production deps
-COPY --from=builder /app/dist ./dist
-COPY package.json ./
-RUN npm install --production --ignore-scripts
-
-# Expose your Streamable HTTP port
+# Run the published Context7 MCP server (npm) wrapped in Supergateway streamable HTTP.
+# Context7 upstream is now a pnpm monorepo; the published package is the supported entrypoint.
+FROM ghcr.io/supercorp-ai/supergateway:3.4.3
+RUN npm install -g @upstash/context7-mcp@3.2.3
 EXPOSE 8080
-
-# Entrypoint wraps your MCP server in Supergateway
 ENTRYPOINT ["supergateway"]
-CMD ["--stdio", "node dist/index.js", "--port", "8080", "--outputTransport", "streamableHttp", "--streamableHttpPath", "/mcp", "--cors"]
+CMD ["--stdio", "context7-mcp", "--port", "8080", "--outputTransport", "streamableHttp", "--streamableHttpPath", "/mcp", "--cors"]
