@@ -8,10 +8,7 @@ COPY src ./src
 RUN npm install && npm run build
 
 # Stage 2: use Supergateway as the runtime base
-FROM ghcr.io/supercorp-ai/supergateway:v2.4.0 AS supergw
-
-# Add Node runtime
-RUN apk add --no-cache nodejs npm
+FROM ghcr.io/supercorp-ai/supergateway:v3.4.3 AS supergw
 
 WORKDIR /app
 
@@ -20,9 +17,9 @@ COPY --from=builder /app/dist ./dist
 COPY package.json ./
 RUN npm install --production --ignore-scripts
 
-# Expose your SSE/HTTP port
+# Expose your Streamable HTTP port
 EXPOSE 8080
 
 # Entrypoint wraps your MCP server in Supergateway
 ENTRYPOINT ["supergateway"]
-CMD ["--stdio", "node dist/index.js", "--port", "8080", "--ssePath", "/sse", "--messagePath", "/message", "--transport", "http", "--cors"]
+CMD ["--stdio", "node dist/index.js", "--port", "8080", "--outputTransport", "streamableHttp", "--streamableHttpPath", "/mcp", "--cors"]
